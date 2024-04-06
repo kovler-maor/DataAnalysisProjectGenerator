@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Dataset</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="rec-container">
+        <h1>Recommended Datasets</h1>
+
+        <!-- grid for datasets -->
+        <div id="datasets" class="datasets">
+            <div id="dataset1" class="dataset-box" style="position: relative; min-height: 200px; padding-bottom: 50px;">Info placeholder 1</div>
+            <div id="dataset2" class="dataset-box" style="position: relative; min-height: 200px; padding-bottom: 50px;">Info placeholder 2</div>
+            <div id="dataset3" class="dataset-box" style="position: relative; min-height: 200px; padding-bottom: 50px;">Info placeholder 3</div>
+        </div>
+
+    </div>
+
+    <!-- footer -->
+    <footer>
+        <p>&copy; All rights reserved. 2024 Project by Mor Zohar & Maor Kovler.</p>
+    </footer>
+
+    <!-- back to main button -->
+    <button class="back-to-main" onclick="location.href='index.html'">Back to Main</button>
+
+    <!-- script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const recommendations = JSON.parse(localStorage.getItem('datasetRecommendations') || '[]');
+            const datasetsContainer = document.getElementById('datasets');
+            
+            datasetsContainer.innerHTML = ''; // Clear placeholder content
+        
+            recommendations.forEach((dataset, index) => {
+                const datasetBox = document.createElement('div');
+                datasetBox.onclick = (ev) => onClick(ev, index)
+                datasetBox.className = 'dataset-box';
+                datasetBox.style = "position: relative; min-height: 200px; padding-bottom: 50px;";
+                datasetBox.innerHTML = `
+                    <h3 class="Title">${dataset.title}</h3>
+                    <p class="Description">${dataset.description}</p>
+                    <p class="Columns">Columns: ${dataset.columns}</p>
+                    <p class="Rows">Rows: ${dataset.rows}</p>
+                    <p class="Date">${dataset.date}</p>
+                `;
+                datasetsContainer.appendChild(datasetBox);
+            });
+        });
+
+        function onClick (ev, index) {
+            window.location.href = `details.html?index=${index}`
+        }
+        </script>
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- old script -->
+    <!-- <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const recommendations = JSON.parse(localStorage.getItem('datasetRecommendations') || '[]');
+            const datasetsContainer = document.getElementById('datasets');
+            
+            recommendations.forEach(dataset => {
+                const datasetBox = document.createElement('div');
+                datasetBox.className = 'dataset-box';
+                datasetBox.innerHTML = `
+                    <h3>${dataset.title}</h3>
+                    <p>${dataset.description}</p>
+                    <p>Columns: ${dataset.columns}, Rows: ${dataset.rows}</p>
+                    <p>Date: ${dataset.date}</p>
+                    <a href="${dataset.link}" target="_blank">Access Dataset</a>
+                `;
+                datasetsContainer.appendChild(datasetBox);
+            });
+        });
+    </script> -->
+
+
+</body>
+</html>

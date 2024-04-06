@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dataset Details</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<!-- Footer -->
+<footer>
+    <p> &copy; All rights reserved. 2024 Project by Mor Zohar & Maor Kovler.</p>
+</footer>
+
+<body onload="init()">
+    <div class="road-map-container">
+
+        <div id="metadata" class="metadata-container">Loading</div>
+        <div class="interactivity-container" id="interactivity-container">
+            
+            <div id="loader" style="display: none;" class="loader">
+            </div>
+
+            <form id="buzzWords" class="buzz-words">
+                <p for="buzzWords" class="buzz-words-title">So what would you like your project to include?</p>
+                <div style="
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                align-items: center;">
+                    <input type="checkbox" id="KNN" name="buzzWord" value="KNN" class="styled-checkbox">
+                    <label for="KNN" class="styled-label">KNN</label><br>
+                    
+                    <input type="checkbox" id="K-means" name="buzzWord" value="K-means" class="styled-checkbox">
+                    <label for="K-means" class="styled-label">K-means</label><br>
+                    
+                    <input type="checkbox" id="Linear-Regression" name="buzzWord" value="Linear-Regression" class="styled-checkbox">
+                    <label for="Linear-Regression" class="styled-label">Linear-Regression</label>
+
+                    <input type="checkbox" id="Cross-Validation" name="buzzWord" value="Cross-Validation" class="styled-checkbox">
+                    <label for="Cross-Validation" class="styled-label">Cross-Validation</label>
+
+                    <input type="checkbox" id="Elbow-Method" name="buzzWord" value="Elbow-Method" class="styled-checkbox">
+                    <label for="Elbow-Method" class="styled-label">Elbow-Method</label>
+
+                    <input type="checkbox" id="bootstrap" name="buzzWord" value="bootstrap" class="styled-checkbox">
+                    <label for="bootstrap" class="styled-label">bootstrap</label>
+
+                    <input type="checkbox" id="P-value" name="buzzWord" value="P-value" class="styled-checkbox">
+                    <label for="P-value" class="styled-label">P-value</label>
+
+                    <input type="checkbox" id="Feature-engineering" name="buzzWord" value="Feature-engineering" class="styled-checkbox">
+                    <label for="Feature-engineering" class="styled-label">Feature-engineering</label>
+
+                    <input type="checkbox" id="Gaussian-Mixture-Models" name="buzzWord" value="Gaussian-Mixture-Models" class="styled-checkbox">
+                    <label for="Gaussian-Mixture-Models" class="styled-label">Gaussian-Mixture-Models</label>
+
+                    <input type="checkbox" id="Random-Forests" name="buzzWord" value="Random-Forests" class="styled-checkbox">
+                    <label for="Random-Forests" class="styled-label">Random-Forests</label>
+
+                    <input type="checkbox" id="Support-Vector-Machines" name="buzzWord" value="Support-Vector-Machines" class="styled-checkbox">
+                    <label for="Support-Vector-Machines" class="styled-label">Support-Vector-Machines</label>
+
+                    <input type="checkbox" id="Lasso-Regression" name="buzzWord" value="Lasso-Regression" class="styled-checkbox">
+                    <label for="Lasso-Regression" class="styled-label">Lasso-Regression</label>
+
+                    <input type="checkbox" id="Ridge-Regression" name="buzzWord" value="Ridge-Regression" class="styled-checkbox">
+                    <label for="Ridge-Regression" class="styled-label">Ridge-Regression</label>
+
+                </div>
+                
+                <button type="submit" class="submit-buzz">Submit</button>
+            </form>
+        
+        
+    <!-- Back to Main Button -->
+    <button class="back-to-main" onclick="location.href='index.html'">Back to Main</button>
+    
+</div>
+    
+<script>
+    // Event listener for the buzzWords form
+    document.getElementById('buzzWords').addEventListener('submit', function(event) {
+            // Prevent the form from actually submitting
+            event.preventDefault();
+            const selectedBuzz = getSelectedBuzzWords();
+            const searchParams = new URLSearchParams(window.location.search);
+            const index = searchParams.get('index')
+            if (index || !isNaN(Number(index))) {
+                const json = window.localStorage.getItem('datasetRecommendations')
+                const data = JSON.parse(json)
+                if (!data) return window.location.href = '/'
+                const selectedRec = data[index]
+                toggleElement('#buzzWords')
+                toggleElement('#loader')
+                renderInstructions(selectedRec, selectedBuzz)
+            }
+            else {
+                alert('Erorr: No dataset selected. Please go back to the main page and select a dataset.')
+            }
+        });
+
+    // init the page with the metadata of the selected dataset
+    function init (){
+        const searchParams = new URLSearchParams(window.location.search);
+        const index = searchParams.get('index')
+        if (index || !isNaN(Number(index))) {
+            const json = window.localStorage.getItem('datasetRecommendations')
+            const data = JSON.parse(json)
+            if (!data) return window.location.href = '/'
+            const selectedRec = data[index]
+            renderMetaData(selectedRec)
+        }
+    }
+
+    // Fetch the metadata from the server and render it
+    function renderMetaData (selectedRec){
+        console.log("selectedRec.link", selectedRec.link)
+        const htmlContent = `
+        <div class="meta-row meta-Title">${selectedRec.title} </div>
+        <div class="meta-row meta-Description">${selectedRec.description} </div>
+        <div class="meta-row meta-Columns"> <strong>Columns:</strong> ${selectedRec.columns} </div>
+        <div class="meta-row meta-Rows"> <strong>Rows:</strong> ${selectedRec.rows} </div>
+        <div class="meta-row meta-Date"> <strong>Date:</strong> ${selectedRec.date} </div>
+        <div> <a href=${selectedRec.link} target="_blank" class="meta-row meta-Link">Access Dataset</a></div> `;
+        
+              
+        // get each dataset box individually
+        const metadataBox = document.getElementById('metadata');
+
+        // Display the result
+        // add all data from the dataset to the boxes
+        metadataBox.innerHTML = htmlContent;
+    }
+    
+    // Fetch the instructions from the server and render it
+    async function renderInstructions(selectedRec, selectedBuzz){
+        try {
+            const res = await fetch('http://localhost:3000/instructions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                selectedRec: selectedRec,
+                selectedBuzz: selectedBuzz
+            })
+        })
+
+        const instruction = await res.json()
+        const data = parseData(instruction)
+        renderButtons(data)
+        
+        } catch (err) {
+            console.error(err)
+        }   
+        toggleElement('#loader')
+
+    }
+
+    // get the value of the selected checkboxes 
+    function getSelectedBuzzWords() {
+            let checkboxes = document.getElementsByName('buzzWord');
+            let selectedBuzz = "";
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (i == checkboxes.length - 1) {
+                    if (checkboxes[i].checked) {
+                        selectedBuzz += checkboxes[i].value;
+                    }
+                } else {
+                    if (checkboxes[i].checked) {
+                        selectedBuzz += checkboxes[i].value + ", ";
+                    }
+                }
+            }      
+            return selectedBuzz;
+        }
+
+    // map interaction script 
+    function toggleSubmenu(id) {
+        const submenu = document.getElementById('id-' + id);
+        const shouldExpand = submenu.style.display !== 'block';
+        
+        // Toggle the current submenu
+        submenu.style.display = shouldExpand ? 'block' : 'none';
+    }
+
+    // parsing the fetched data
+    function parseData(data) {
+        const inputString = data?.completion?.content
+        const lines = inputString.split('@@');
+        const result = [];
+        let currentMainItem = null;
+        let currentSubItem = null;
+        let currentSubSubItem = null;
+
+        lines.forEach(line => {
+            // if the line is empty, continue to the next line
+            if (!line) return;
+
+            if (line.startsWith('$$$') || line.startsWith('/n$$$')) {
+            // Sub-sub-title
+            const [title, tooltip] = line.substring(3).split('#');
+            currentSubSubItem = { title: title.trim(), tooltip: tooltip || '', subItems: [] };
+            if (currentSubItem) {
+                currentSubItem.subItems.push(currentSubSubItem);
+            }
+            } else if (line.startsWith('$$') || line.startsWith('/n$$'))  {
+            // Sub-title
+            const [title, tooltip] = line.substring(2).split('#');
+            currentSubItem = { title: title.trim(), tooltip: tooltip || '', subItems: [] };
+            if (currentMainItem) {
+                currentMainItem.subItems.push(currentSubItem);
+            }
+            } else if (line.startsWith('$') || line.startsWith('/n$'))  {
+            // Main title
+            if (currentMainItem) {
+                result.push(currentMainItem); // Push the previous main item into result
+            }
+            const [title, tooltip] = line.substring(1).split('#');
+            currentMainItem = { title: title.trim(), tooltip: tooltip || '', subItems: [] };
+            }
+        });
+
+        if (currentMainItem) {
+            result.push(currentMainItem); // Push the last main item into result
+        }
+        return result;
+        }
+
+    // parsing the fetched data 
+    function parseString(data) {
+        const regex = /^$|\s+/
+        const input = data?.completion?.content
+        const lines = input ? input.split('\n') : [];
+        let result = [];
+        let currentLevel = [];
+
+
+        // Validate lines, cut empty spaces
+        const validLines = lines.filter((line) => (!!line.length && line.match(regex))) 
+
+
+
+        validLines.forEach((line) => {
+            let match = line.match(/\$+title: '([\d. ]+) - (.+)',?/);
+            if (match) {
+                const [str, level, title] = match;
+                const depth = level.split('.').length;
+
+                const step = {
+                    title: level,
+                    subItems: [],
+                    tooltip: ''
+                };
+
+                step.title = title;
+                step.tooltip = '';
+
+                if (depth === 1) {
+                    result.push(step);
+                    currentLevel = [step];
+                } else {
+                    let parent = currentLevel[depth - 2];
+                    parent.subItems.push(step);
+                    currentLevel[depth - 1] = step;
+                }
+            }
+        })
+
+        return result;
+    }
+
+    // render the buttons on the page
+    function renderButtons(data) {
+        createButtons(data, document.getElementById('interactivity-container'), 0);
+    }
+
+
+
+    // create the buttons on the page
+    function createButtons(items, container, level=0, biggestChild=-1) {
+        // Define your colors for each level
+        const colors = [
+            'rgba(0, 132, 255, 0.534)', // Color for level 0
+            'rgba(0, 132, 255, 0.204)', // Color for level 1
+            'rgba(0, 132, 255, 0.054)'  // Color for level 2
+            // Add more colors if there are more levels
+        ];
+
+        const hoverColor = 'rgba(8, 80, 121, 0.654)'; // Define hover color
+        
+        items.forEach(item => {
+
+            // if item.title is a natural number, then get the item.title of his last child
+            if (item.title.match(/^\d+$/)) {
+                biggestChild = item.subItems[item.subItems.length - 1].title;
+            }
+
+            const button = document.createElement('div');
+            button.className = 'sub-button';
+            button.textContent = item.title;
+
+            // Create the tooltip span element
+            if (item.tooltip) {
+                button.innerHTML = `<div class="tooltip-container"> ${item.title}
+                                        <span class="tooltip-content">${item.tooltip}</span>
+                                    </div>`
+            }
+
+            // Apply the color based on level, default to the last color if level is out of array bounds
+            const baseColor = colors[level] || colors[colors.length - 1];
+            button.style.backgroundColor = baseColor;
+
+            button.id = `level-${level}-id-${item.title}`;
+
+            // Event listeners for hover effect
+            button.onmouseover = () => { button.style.backgroundColor = hoverColor; };
+            button.onmouseout = () => { button.style.backgroundColor = baseColor; };
+
+
+            button.onclick = () => toggleSubmenu(item.title);
+            container.appendChild(button);
+
+            if (item.subItems && item.subItems.length > 0) {
+                const submenu = document.createElement('div');
+                submenu.className = 'submenu';
+                submenu.id = 'id-' + item.title;
+
+                // if the button is the last bottom level, add a class to style it
+                if (item.title === biggestChild) {
+
+                    const line = document.createElement('div');
+                    line.className = 'vertical-line';
+                    submenu.appendChild(line);
+                }
+                
+                container.appendChild(submenu);
+
+                // Recursive call to create buttons for the sub-items
+                createButtons(item.subItems, submenu, level + 1, biggestChild);
+            }
+        });
+    }
+
+    // toggle the element display
+    function toggleElement(selector) {
+        const el = document.querySelector(selector)
+        if (!el) return
+
+        const isHidden = el.style.display === 'none'
+        const style = isHidden ? 'block' : 'none'
+
+        el.style.display = style
+    }
+
+
+</script>
+
+</body>
+
+</html>

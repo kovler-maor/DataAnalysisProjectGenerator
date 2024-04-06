@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Data Analysis Project Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="centered-container">
+            
+            <div class="title">
+                <h1>The Data Analysis Project Generator</h1>
+            </div>
+
+            <!-- initial form -->
+                        <form id="datasetForm">
+
+                            <!-- keywords input -->
+                            <div class="input-group">
+                                <label for="keywords">What do you like? Please use short keywords:</label>
+                                <input type="text" id="keywords" name="keywords" class="input" required>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="datasetSize">Select Dataset Size:</label>
+                                <select id="datasetSize" name="datasetSize" required>
+                                    <option value="Small">Small</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="Large" selected>Large</option>
+                                </select>
+                            </div>
+                            <!-- submition button -->
+                            <button type="submit" class="submit" >Find Datasets</button>
+                        
+                        </form>
+                        
+                        <div id="loader" style="display: none;" class="loader-index"></div>
+
+                        <div id = "chat-log">
+
+                        </div>
+
+                    
+                    </div>
+                </div>
+
+                <footer>
+                    <p>&copy; All rights reserved. 2024 Project by Mor Zohar & Maor Kovler.</p>
+                </footer>
+
+                <!-- script -->
+                <script>
+
+                    let isLoading = false
+                    const keywords = document.getElementById('keywords');
+                    const datasetSize = document.getElementById('datasetSize');
+                    const form = document.getElementById('datasetForm');
+
+                    form.addEventListener('submit',async (e) => {
+                        e.preventDefault();
+                         
+                        // keywords input 
+                        const keywordsText = keywords.value;
+                        const keywordsElement = document.createElement('div');
+                        keywordsElement.classList.add('keywords');
+                        keywordsElement.classList.add('keywords-sent');
+                        keywordsElement.innerHTML = `
+                            <div class="keywords-sent-text">${keywordsText}</div>
+                        `;
+
+                        // datasetSize input
+                        const datasetSizeText = datasetSize.value;
+                        const datasetSizeElement = document.createElement('div');
+                        datasetSizeElement.classList.add('datasetSize');
+                        datasetSizeElement.classList.add('datasetSize-sent');
+                        datasetSizeElement.innerHTML = `
+                            <div class="datasetSize-sent-text">${datasetSizeText}</div>
+                        `;
+
+                        toggleElement('#datasetForm')               
+                        toggleElement('#loader')
+
+                        try {
+                            const res = await fetch('http://localhost:3000', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                keywords: keywordsText,
+                                datasetSize: datasetSizeText
+                            })
+                        })
+
+                        const data = await res.json()
+
+                        const keywordsElement = document.createElement('div');
+
+                            keywordsElement.classList.add('keywords');
+                            keywordsElement.classList.add('keywords-received');
+                            keywordsElement.innerHTML = `
+                                <div class="keywords-received-text">${data.completion.content}</div>
+                            `;
+                            // FROM GPT!!!
+                            const suggestions = parseGPTResponseToJSON(data.completion.content);
+                            localStorage.setItem('datasetRecommendations', JSON.stringify(suggestions));
+                            window.location.href = 'recommendation.html'; // Redirect to recommendation.html
+                            //--------------------------------
+
+                        } catch (err) {
+                            console.error(err)
+                        }
+                    })
+
+
+                    function parseGPTResponseToJSON(inputString) {
+                        let datasetLines = inputString.split('\n\n'); // Assuming each dataset is separated by a blank line
+    
+                        // Check if datasetLines contain exactly 4 objects, remove the first if true
+                        if (datasetLines.length === 4) {
+                            datasetLines = datasetLines.slice(1);
+                        }                        
+                        
+                        const datasets = datasetLines.map(datasetBlock => {
+                            const attributes = datasetBlock.split('\n');
+                            const dataset = {};
+
+                            attributes.forEach(attribute => {
+                            const value = attribute.substring(attribute.indexOf(':') + 2);
+                            switch (attribute[0]) {
+                                case '!':
+                                dataset.title = value;
+                                break;
+                                case '@':
+                                dataset.description = value;
+                                break;
+                                case '#':
+                                dataset.columns = parseInt(value, 10);
+                                break;
+                                case '$':
+                                dataset.rows = parseInt(value, 10);
+                                break;
+                                case '%':
+                                dataset.date = value;
+                                break;
+                                case '^':
+                                dataset.link = value;
+                                break;
+                                default:
+                                console.error('Unknown attribute type: ', attribute[0]);
+                            }
+                            });
+
+                            return dataset;
+                        });
+
+                    return datasets;
+                    }
+
+
+
+                    function toggleElement(selector) {
+                        const el = document.querySelector(selector)
+                        if (!el) return
+
+                        const isHidden = el.style.display === 'none'
+                        const style = isHidden ? 'block' : 'none'
+
+                        el.style.display = style
+                    }
+
+                    
+
+                </script>
+            </body>
+            </html>
