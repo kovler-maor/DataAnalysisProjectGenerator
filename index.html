@@ -13,7 +13,7 @@
         <div class="centered-container">
             
             <div class="title">
-                <h1>The Data Analysis Project Generator **git test**</h1>
+                <h1>The Data Analysis Project Generator</h1>
             </div>
 
             <!-- initial form -->
@@ -85,7 +85,7 @@
                         toggleElement('#loader')
 
                         try {
-                            const res = await fetch('http://localhost:3000', {
+                            const res = await fetch('https://azuregpt.azurewebsites.net/api/select?', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'

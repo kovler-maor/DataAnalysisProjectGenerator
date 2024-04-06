@@ -24,6 +24,7 @@ const openai = new OpenAIApi(configuration); // Pass the configuration instance
 
 
 // Route that will get the keywords and dataset size from the user and return the top 3 datasets from Kaggle`
+// https://azuregpt.azurewebsites.net/api/firstAPI?
 app.post('/', async (req, res) => {
    // Refactor prompt eng
 
